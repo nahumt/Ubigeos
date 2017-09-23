@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Ubigeos</title>
+</head>
+<body>
+    <input type="file" id="fileText" onchange="getFile(event)">
+    <script>
+        function getFile(e){
+					let fileUbigeos = e.target.files[0],
+							data = [],
+							Departament = [],
+							Province =  [],
+							District = [];
+					const reader = new FileReader();
+
+					reader.onload = function(e) {
+						const result = e.target.result;                
+						data = getSplit(result,"\n");
+						data.map((d)=>{
+							let item = d.replace(/^“|”$/g,'');
+							let array_item = getSplit(item,"/");
+							let idDept = "", 
+									nameDept = "", 
+									idProv = "", 
+									nameProv = "", 
+									idDist = "", 
+									nameDist  = "";
+
+							array_item.map((a_i, index)=> { 
+								const id  = a_i.match(/\d+/g)?a_i.match(/\d+/g):[];
+								const name  = a_i.match(/\D+/g)?a_i.match(/\D+/g):[];
+
+								let idUbi = id.filter((num) => num.trim() != '')[0];
+										idUbi = idUbi === undefined ? "" : idUbi.trim();
+
+								let nameUbi = name.filter((str) => str.trim() != '')[0];
+										nameUbi = nameUbi === undefined ? "" : nameUbi.trim();
+
+								if(index === 0) {									
+									idDept = idUbi;
+									nameDept = nameUbi;									
+								} else if (index === 1){
+									idProv = idUbi;
+									nameProv = nameUbi;
+								} else if (index === 2) {
+									idDist = idUbi;
+									nameDist = nameUbi;
+								}
+							});
+
+							const existDep = searchUbigeo(Departament, idDept);
+								if(existDep.length === 0 && idDept !== "") {
+									Departament = Departament.concat({
+										id: idDept,
+										name: nameDept 
+									})
+								}
+
+							const existProv = searchUbigeo(Province, idProv);
+								if(existProv.length === 0 && idProv !== "") {
+									Province = Province.concat({
+										id: idProv,
+										name: nameProv,
+										idParent: idDept
+									})
+								}
+
+							const existDist = searchUbigeo(District, idDist);
+								if(existDist.length === 0 && idDist !== "") {
+									District = District.concat({
+										id: idDist,
+										nameDept: nameDist,
+										idParent: idProv
+									})
+								}		
+
+						});
+						console.log('Departament', Departament);
+						console.log('Pronvince', Province);
+						console.log('Distrito', District);
+					}
+
+					reader.readAsText(fileUbigeos);            
+			}
+
+			function getSplit (dataSplit,separator){
+				return dataSplit.trim().split(separator);
+			}
+
+			function searchUbigeo(dataSearch, search) {
+				// if (dataSearch !== undefined) {
+					return dataSearch.filter(das => das.id === search)
+				// } else {
+					// return null
+				// }
+			}
+
+	</script>
+</body>
+</html>
